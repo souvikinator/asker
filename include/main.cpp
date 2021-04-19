@@ -1,8 +1,10 @@
 #include<iostream>
-#include<termios.h>
-#include "termcolor.hpp"
-
-int main(){
-   std::cout<<termcolor::red<<"hello world"<<std::endl; 
+#include "asker.hpp"
+int main()
+{
+   std::cout<<"test-1: confirm prompt"<<std::endl;
+   char exit;
+   exit=asker::confirm("want to exit?",'y','n');
+   std::cout<<"user chose:"<<exit<<std::endl;
    return 0;
 }
