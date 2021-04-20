@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <limits>
-#include "termcolor.hpp"
+#include "../termcolor/termcolor.hpp"
 
 namespace asker
 {
@@ -72,26 +72,33 @@ namespace asker
             return stream;
         }
     }
-    // TODO: remove redundant code
-    /**
-    *FIXME: on pressing enter cursor moves to new line
-    * and line gets printed again on input :( 
-    */
-    char inline confirm(const std::string &msg)
+    
+    inline bool confirm(const std::string &msg)
     {
-        char res;
-        std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::reset << "  [y/n] " << termcolor::blue;
-        while (std::cin>>res && (res!='y' && res!='n' && res!='Y' && res!='N'))
-        {
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << termcolor::red << ">> invalid input (y/n)" << termcolor::reset;
-            // move to start=>up=>clear_line=>print line
-            std::cout<<_utils::mvStart<<_utils::mvUp<1><<_utils::clearLn<_utils::EOL>;
-            std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::reset << "  [y/n] " << termcolor::blue;
-        }
-        //clear error line
-        std::cout << _utils::clearLn<_utils::EOL>;
+        bool res;
+        std::string ans;
+        std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::reset << " [y/n] " << termcolor::blue;
+        getline(std::cin,ans);
+        if (ans.length()==0 || ans[0] == 'y' || ans[0] == 'Y')
+            res = true;
+        else
+            res = false;
         std::cout << termcolor::reset;
         return res;
+    }
+
+    inline std::string input(const std::string &msg)
+    {
+        /*
+         & for validation 
+         std::cout << termcolor::red << ">> invalid input (y/n)" << termcolor::reset;
+         std::cout << _utils::mvStart << _utils::mvUp<1> << _utils::clearLn<_utils::EOL>;
+         std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::reset << "  [y/n] " << termcolor::blue;
+        */
+        std::string ans;
+        std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << " " << termcolor::blue;
+        getline(std::cin,ans);
+        std::cout << termcolor::reset;
+        return ans;
     }
 }
