@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <limits>
 #include "termcolor.hpp"
 
 namespace asker
@@ -9,7 +10,7 @@ namespace asker
         const int EOL = 2; //End of line
         const int CURSOR_TO_EOL = 0;
         const int CURSOR_TO_SOL = 1; //start of line
-        
+
         //* to move cursor n char
         template <uint8_t n>
         inline std::ostream &mvUp(std::ostream &stream)
@@ -58,30 +59,35 @@ namespace asker
         }
 
         //* clear line
-        template <uint8_t mode> inline
-        std::ostream& clearLn(std::ostream& stream){
+        template <uint8_t mode>
+        inline std::ostream &clearLn(std::ostream &stream)
+        {
             char cl[8];
-            if(mode!=1 && mode!=2 && mode!=3){
+            if (mode != 1 && mode != 2 && mode != 3)
+            {
                 throw "Invalid mode provided in clearLn";
             }
-            sprintf(cl,"\033[%dK",mode);
-            stream<<cl;
+            sprintf(cl, "\033[%dK", mode);
+            stream << cl;
             return stream;
         }
     }
     // TODO: remove redundant code
+    // FIXME: breaks when user enters a string rather than char
     char inline confirm(const std::string &msg)
     {
         char res;
         std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::reset << "  [y/n] " << termcolor::blue;
-        while (std::cin >> res && (res != 'y' && res != 'n'))
+        // TODO: only take one char as input
+        while (std::cin>>res && (res!='y' && res!='n'))
         {
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << termcolor::red << ">> invalid input (y/n)" << termcolor::reset;
-            // move cursor to the input part
+            // move to start=>up=>clear_line=>print lien
             std::cout<<_utils::mvStart<<_utils::mvUp<1><<_utils::clearLn<_utils::EOL>;
             std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::reset << "  [y/n] " << termcolor::blue;
         }
-        std::cout<<_utils::clearLn<_utils::EOL>;
+        std::cout << _utils::clearLn<_utils::EOL>;
         std::cout << termcolor::reset;
         return res;
     }
