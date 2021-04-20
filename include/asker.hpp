@@ -1,19 +1,88 @@
 #pragma once
-#include<iostream>
+#include <iostream>
 #include "termcolor.hpp"
 
-namespace asker{
-    // TODO: make it a template?
-    char inline confirm(std::string msg,char op1,char op2){
-        char* fmtMsg=new char(sizeof(msg));
+namespace asker
+{
+    namespace _utils
+    {
+        const int EOL = 2; //End of line
+        const int CURSOR_TO_EOL = 0;
+        const int CURSOR_TO_SOL = 1; //start of line
+        
+        //* to move cursor n char
+        template <uint8_t n>
+        inline std::ostream &mvUp(std::ostream &stream)
+        {
+            char u[8];
+            std::sprintf(u, "\033[%dA", n);
+            stream << u;
+            return stream;
+        }
+
+        //* to move cursor n char down
+        template <uint8_t n>
+        inline std::ostream &mvDown(std::ostream &stream)
+        {
+            char d[8];
+            sprintf(d, "\033[%dB", n);
+            stream << d;
+            return stream;
+        }
+
+        //* to move cursor n char to left
+        template <uint8_t n>
+        inline std::ostream &mvleft(std::ostream &stream)
+        {
+            char l[8];
+            sprintf(l, "\033[%dD", n);
+            stream << l;
+            return stream;
+        }
+
+        //* to move cursor n char to right
+        template <uint8_t n>
+        inline std::ostream &mvRight(std::ostream &stream)
+        {
+            char r[8];
+            sprintf(r, "\033[%dC", n);
+            stream << r;
+            return stream;
+        }
+
+        //* to move cursor to the extreme left
+        inline std::ostream &mvStart(std::ostream &stream)
+        {
+            stream << "\033[1000D";
+            return stream;
+        }
+
+        //* clear line
+        template <uint8_t mode> inline
+        std::ostream& clearLn(std::ostream& stream){
+            char cl[8];
+            if(mode!=1 && mode!=2 && mode!=3){
+                throw "Invalid mode provided in clearLn";
+            }
+            sprintf(cl,"\033[%dK",mode);
+            stream<<cl;
+            return stream;
+        }
+    }
+    // TODO: remove redundant code
+    char inline confirm(const std::string &msg)
+    {
         char res;
-        std::sprintf(fmtMsg,"%s [%c/%c] ",msg.c_str(),op1,op2);
-        std::cout<<termcolor::green<<"? "<<termcolor::reset<<fmtMsg<<termcolor::blue;
-        std::cin>>res;
-        //* add check if res= op1 or op2
-        //! res is neither op1 not op2=> show error in next line=>
-        //! cursor back to input line
-        std::cout<<termcolor::reset;
+        std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::reset << "  [y/n] " << termcolor::blue;
+        while (std::cin >> res && (res != 'y' && res != 'n'))
+        {
+            std::cout << termcolor::red << ">> invalid input (y/n)" << termcolor::reset;
+            // move cursor to the input part
+            std::cout<<_utils::mvStart<<_utils::mvUp<1><<_utils::clearLn<_utils::EOL>;
+            std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::reset << "  [y/n] " << termcolor::blue;
+        }
+        std::cout<<_utils::clearLn<_utils::EOL>;
+        std::cout << termcolor::reset;
         return res;
     }
 }
