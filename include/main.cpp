@@ -9,8 +9,8 @@ int main()
    std::cout << "wants to exit:" << exit << std::endl;
    
    std::cout << "test-2: input prompt" << std::endl;
-   std::string name;
-   name = asker::input("yo! what yo name?");
-   std::cout << "user name is:" << name << std::endl;
+   int m;//default value
+   m=asker::input<int>("yo! enter a number:",true);
+   std::cout << "user name is:" << m << std::endl;
    return 0;
 }

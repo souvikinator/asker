@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
 #include <limits>
+#include <sstream>
+#include <typeinfo>
 #include "../termcolor/termcolor.hpp"
 
 namespace asker
@@ -71,34 +73,49 @@ namespace asker
             stream << cl;
             return stream;
         }
+
+        inline void showErr(const std::string &msg)
+        {
+            std::cout << termcolor::red << msg << termcolor::reset;
+            // move cursor to the input line (above error)
+            std::cout << _utils::mvStart << _utils::mvUp<1> << _utils::clearLn<_utils::EOL>;
+        }
     }
-    
+
+    //* add default value option, add input type check
+    template <typename T>
+    inline T input(const std::string &msg, bool required = false)
+    {
+        std::string raw_ans;
+        T ans;
+        std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::blue;
+        while (getline(std::cin, raw_ans) && raw_ans.length() == 0 && required)
+        {
+            _utils::showErr("! this is a required field");
+            std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::blue;
+        }
+        // clear error in the next line
+        std::cout << _utils::clearLn<_utils::EOL>;
+        std::cout << termcolor::reset;
+        std::istringstream sstream(raw_ans);
+        sstream >> ans;
+        return ans;
+    }
+
     inline bool confirm(const std::string &msg)
     {
-        bool res;
-        std::string ans;
-        std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::reset << " [y/n] " << termcolor::blue;
-        getline(std::cin,ans);
-        if (ans.length()==0 || ans[0] == 'y' || ans[0] == 'Y')
-            res = true;
-        else
+        bool res = true;
+        char ans;
+        ans = input<char>(msg + " [y/n] ");
+        if (ans != 'y' && ans != 'Y' && ans != '\0')
             res = false;
-        std::cout << termcolor::reset;
         return res;
     }
 
-    inline std::string input(const std::string &msg)
-    {
-        /*
+}
+/*
          & for validation 
          std::cout << termcolor::red << ">> invalid input (y/n)" << termcolor::reset;
          std::cout << _utils::mvStart << _utils::mvUp<1> << _utils::clearLn<_utils::EOL>;
          std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::reset << "  [y/n] " << termcolor::blue;
         */
-        std::string ans;
-        std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << " " << termcolor::blue;
-        getline(std::cin,ans);
-        std::cout << termcolor::reset;
-        return ans;
-    }
-}
