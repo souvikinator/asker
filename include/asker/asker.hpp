@@ -125,21 +125,23 @@ namespace asker
         _utils::rawModeOn();
         char key, c1, c2;
         std::string ans;
-        int pos = 0;
+        int pos = 0, max_pos = 0;
         std::cout << termcolor::green << "? " << termcolor::blue << msg << termcolor::bright_grey << "(up and down arrow key)" << termcolor::reset << std::endl;
         // print all options
         for (int i = 0; i < n; i++)
         {
+            //if constains empty string then continue
+            if (options[i].empty())
+                continue;
             if (i == 0)
                 std::cout << termcolor::yellow << "> " << termcolor::reset << options[i] << std::endl;
             else
                 std::cout << "  " << options[i] << std::endl;
-            pos += 1;
+            max_pos += 1;
         }
         // move cursor to first option and extreme left
-        std::cout << _utils::mvUp(pos) << _utils::mvStart();
-        pos = 0;
-        while (std::cin.get(key))
+        std::cout << _utils::mvUp(max_pos) << _utils::mvStart();
+        while (std::cin.get(key) && key != '\n')
         {
             if (iscntrl(key))
             { //TODO: cleanup!
@@ -163,7 +165,7 @@ namespace asker
                         }
                         break;
                     case 66: //down
-                        if (pos < (n - 1))
+                        if (pos < max_pos - 1)
                         {
                             //change ">" to " " of current option
                             std::cout << termcolor::reset << " " << _utils::mvStart();
@@ -177,22 +179,18 @@ namespace asker
                         break;
                     }
                 }
-                // enter
-                if (key == 10)
-                {
-                    // FIXME:
-                    ans = options[pos];
-                    std::cout << _utils::mvDown(n - (pos + 1));
-                    // mv to end options
-                    for (int i = 0; i < n - 1; i++)
-                    {
-                        std::cout << _utils::clearLn(_utils::EOL) << _utils::mvUp(1);
-                    }
-                    std::cout << ans << std::endl;
-                    break;
-                }
             }
         }
+        // FIXME:
+        ans = options[pos];
+        // mv to end options
+        std::cout << _utils::mvDown(max_pos - (pos + 1));
+        for (int i = 0; i < max_pos; i++)
+        {
+            std::cout << _utils::clearLn(_utils::EOL) << _utils::mvUp(1);
+        }
+        std::cout << _utils::clearLn(_utils::EOL);
+        std::cout << termcolor::green << "? " << termcolor::blue << msg << " " << termcolor::reset << ans << std::endl;
         _utils::rawModeOff();
         return ans;
     }
