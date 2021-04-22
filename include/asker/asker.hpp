@@ -1,6 +1,5 @@
 #pragma once
 #include <iostream>
-#include <limits>
 #include <sstream>
 #include <typeinfo>
 #include <termios.h>
@@ -58,15 +57,32 @@ namespace asker
             return "\033[" + std::to_string(mode) + "K";
         }
 
+        //* show error and move cursor to previous line
         inline void showErr(const std::string &msg)
         {
-            // move cursor to the input line (above error)
             std::cout << termcolor::red << msg << termcolor::reset << _utils::mvUp(1) << _utils::mvStart();
         }
 
+        //* move cursor  to the end of the display message
         inline void mvToInput(const int input_msg_length)
         {
-            std::cout << _utils::mvRight(input_msg_length) << termcolor::blue;
+            std::cout << _utils::mvRight(input_msg_length);
+        }
+
+        //* prints message in proper format
+        inline void printMsg(const std::string &msg)
+        {
+            std::cout << termcolor::green << "? " << termcolor::blue << termcolor::bold << msg + " " << termcolor::reset;
+        }
+
+        //* hide cursor
+        inline void hideCursor(){
+            std::cout<<"\e[?25l";
+        }
+
+        //* show cursor
+        inline void showCursor(){
+            std::cout<<"\e[?25h";
         }
 
         //* raw mode stuff
@@ -75,6 +91,7 @@ namespace asker
         inline void rawModeOff()
         {
             tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+            showCursor();
         }
         inline void rawModeOn()
         {
@@ -83,21 +100,21 @@ namespace asker
             struct termios raw = orig_termios;
             raw.c_lflag &= ~(ECHO | ICANON);
             tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+            hideCursor();
         }
     }
 
-    //* add default value option, add input type check
+    //TODO: add default value option, add input type check
     template <typename T>
     inline T input(const std::string &msg, bool required = false)
     {
         std::string raw_ans;
         const int in_msg_len = msg.length() + 3; // "? " + msg + " "
         T ans;
-        std::cout << termcolor::green << "? " << termcolor::reset << termcolor::bold << msg << termcolor::blue;
+        _utils::printMsg(msg);
         while (getline(std::cin, raw_ans) && raw_ans.length() == 0 && required)
         {
             _utils::showErr("! this is a required field");
-            //move cursor at the end of input msg
             _utils::mvToInput(in_msg_len);
         }
         // clear error in the next line
@@ -109,16 +126,18 @@ namespace asker
         return ans;
     }
 
+    //* yes/no ?
     inline bool confirm(const std::string &msg)
     {
         bool res = true;
         char ans;
-        ans = input<char>(msg + " [y/n] ");
+        ans = input<char>(msg + " (y/n) ");
         if (ans != 'y' && ans != 'Y' && ans != '\0')
             res = false;
         return res;
     }
 
+    //* select from list of options
     template <size_t n>
     inline std::string selectList(const std::string &msg, const std::string (&options)[n])
     {
@@ -126,7 +145,8 @@ namespace asker
         char key, c1, c2;
         std::string ans;
         int pos = 0, max_pos = 0;
-        std::cout << termcolor::green << "? " << termcolor::blue << msg << termcolor::bright_grey << "(up and down arrow key)" << termcolor::reset << std::endl;
+        _utils::printMsg(msg);
+        std::cout << termcolor::bright_grey << "(up and down arrow key)" << termcolor::reset << std::endl;
         // print all options
         for (int i = 0; i < n; i++)
         {
