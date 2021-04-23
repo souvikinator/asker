@@ -37,7 +37,6 @@ namespace asker
         //* to move cursor n char to right
         inline std::string mvRight(int n)
         {
-            // std::string r;
             return "\033[" + std::to_string(n) + "C";
         }
 
@@ -67,6 +66,24 @@ namespace asker
         inline void mvToInput(const int input_msg_length)
         {
             std::cout << _utils::mvRight(input_msg_length) << termcolor::blue;
+        }
+
+        inline int getArrowKey(char key)
+        {
+            if (iscntrl(key))
+            {
+                char c1, c2;
+                if (key == 27)
+                {
+                    std::cin.get(c1);
+                    std::cin.get(c2);
+                    if (c1 != 91)
+                        return -1;
+                    if (c2 >= 65 && c2 <= 68)
+                        return c2;
+                }
+            }
+            return -1;
         }
 
         //* raw mode stuff
@@ -143,45 +160,35 @@ namespace asker
         std::cout << _utils::mvUp(max_pos) << _utils::mvStart();
         while (std::cin.get(key) && key != '\n')
         {
-            if (iscntrl(key))
-            { //TODO: cleanup!
-                if (key == 27)
+            int arrKey = _utils::getArrowKey(key);
+            switch (arrKey)
+            {
+            case 65: //up
+                if (pos > 0)
                 {
-                    std::cin.get(c1);
-                    std::cin.get(c2);
-                    if (c1 != 91)
-                        continue;
-                    switch (c2)
-                    {
-                    case 65: //up
-                        if (pos > 0)
-                        {
-                            //change ">" to " " of current option
-                            std::cout << termcolor::reset << " " << _utils::mvStart();
-                            pos -= 1;
-                            //change " " to ">" of next option
-                            std::cout << _utils::mvUp(1) << termcolor::yellow << ">" << termcolor::reset;
-                            std::cout << _utils::mvStart();
-                        }
-                        break;
-                    case 66: //down
-                        if (pos < max_pos - 1)
-                        {
-                            //change ">" to " " of current option
-                            std::cout << termcolor::reset << " " << _utils::mvStart();
-                            pos += 1;
-                            //change " " to ">" of next option
-                            std::cout << _utils::mvDown(1) << termcolor::yellow << ">" << termcolor::reset;
-                            std::cout << _utils::mvStart();
-                        }
-                        break;
-                    default:
-                        break;
-                    }
+                    //change ">" to " " of current option
+                    std::cout << termcolor::reset << " " << _utils::mvStart();
+                    pos -= 1;
+                    //change " " to ">" of next option
+                    std::cout << _utils::mvUp(1) << termcolor::yellow << ">" << termcolor::reset;
+                    std::cout << _utils::mvStart();
                 }
+                break;
+            case 66: //down
+                if (pos < max_pos - 1)
+                {
+                    //change ">" to " " of current option
+                    std::cout << termcolor::reset << " " << _utils::mvStart();
+                    pos += 1;
+                    //change " " to ">" of next option
+                    std::cout << _utils::mvDown(1) << termcolor::yellow << ">" << termcolor::reset;
+                    std::cout << _utils::mvStart();
+                }
+                break;
+            default:
+                break;
             }
         }
-        // FIXME:
         ans = options[pos];
         // mv to end options
         std::cout << _utils::mvDown(max_pos - (pos + 1));
