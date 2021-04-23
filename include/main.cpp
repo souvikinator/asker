@@ -6,7 +6,7 @@ int main()
    // list select demo
    std::cout << "test-1: select list" << std::endl;
    std::string selection;
-   std::string options[5] = {"option-1", "option-2", "option-3", "option-4"};
+   std::string options[5] = {"option-1", "op", "option-3", "option-4"};
    selection = asker::selectList("select options:", options);
    std::cout << "user selected: " << selection << std::endl;
    std::cout << std::endl;
