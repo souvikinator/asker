@@ -83,7 +83,7 @@ namespace asker
         inline void showCursor(){
             std::cout<<"\e[?25h";
         }
-
+        //* returns arrow key code else -1
         inline int getArrowKey(char key)
         {
             if (iscntrl(key))
