@@ -4,20 +4,27 @@
 #include <typeinfo>
 #include <termios.h>
 #include <unistd.h>
-#include "../termcolor/termcolor.hpp"
 
 namespace asker
 {
+    namespace color{
+        const std::string red="\033[31m";
+        const std::string blue="\033[34m";
+        const std::string green="\033[32m";
+        const std::string yellow="\033[33m";
+        const std::string white="\033[37m";
+        const std::string grey="\033[30;1m";
+        const std::string reset="\033[0m";
+    }
     namespace _utils
     {
         const int EOL = 2; //End of line
         const int CURSOR_TO_EOL = 0;
         const int CURSOR_TO_SOL = 1; //start of line
-
+        
         //* to move cursor n char
         inline std::string mvUp(int n)
         {
-            // char u[8];
             return "\033[" + std::to_string(n) + "A";
         }
 
@@ -39,12 +46,6 @@ namespace asker
             return "\033[" + std::to_string(n) + "C";
         }
 
-        //* to move cursor to the extreme left
-        inline std::string mvStart()
-        {
-            return "\033[1000D";
-        }
-
         //* clear line
         inline std::string clearLn(int mode)
         {
@@ -59,7 +60,7 @@ namespace asker
         //* show error and move cursor to previous line
         inline void showErr(const std::string &msg)
         {
-            std::cout << termcolor::red << msg << termcolor::reset << _utils::mvUp(1) << _utils::mvStart();
+            std::cout << color::red << msg << color::reset << _utils::mvUp(1) << _utils::mvleft(1000);
         }
 
         //* move cursor  to the end of the display message
@@ -71,17 +72,17 @@ namespace asker
         //* prints message in proper format
         inline void printMsg(const std::string &msg)
         {
-            std::cout << termcolor::green << "? " << termcolor::blue << termcolor::bold << msg + " " << termcolor::reset;
+            std::cout << color::green << "? " << color::blue << msg + " " << color::reset;
         }
 
         //* hide cursor
         inline void hideCursor(){
-            std::cout<<"\e[?25l";
+            std::cout<<"\033[?25l";
         }
 
         //* show cursor
         inline void showCursor(){
-            std::cout<<"\e[?25h";
+            std::cout<<"\033[?25h";
         }
         //* returns arrow key code else -1
         inline int getArrowKey(char key)
@@ -136,7 +137,7 @@ namespace asker
         }
         // clear error in the next line
         std::cout << _utils::clearLn(_utils::EOL);
-        std::cout << termcolor::reset;
+        std::cout << color::reset;
         std::istringstream sstream(raw_ans);
         // FIXME: add type check
         sstream >> ans;
@@ -159,25 +160,25 @@ namespace asker
     inline std::string selectList(const std::string &msg, const std::string (&options)[n])
     {
         _utils::rawModeOn();
-        char key, c1, c2;
+        char key;
         std::string ans;
         int pos = 0, max_pos = 0;
         _utils::printMsg(msg);
-        std::cout << termcolor::bright_grey << "(up and down arrow key)" << termcolor::reset << std::endl;
+        std::cout << color::grey << "(up and down arrow key)" << color::reset << std::endl;
         // print all options
         for (int i = 0; i < n; i++)
         {
-            //if constains empty string then continue
+            //empty string? then continue
             if (options[i].empty())
                 continue;
             if (i == 0)
-                std::cout << termcolor::yellow << "> " << termcolor::reset << options[i] << std::endl;
+                std::cout << color::yellow << "> " << color::reset << options[i] << std::endl;
             else
                 std::cout << "  " << options[i] << std::endl;
             max_pos += 1;
         }
         // move cursor to first option and extreme left
-        std::cout << _utils::mvUp(max_pos) << _utils::mvStart();
+        std::cout << _utils::mvUp(max_pos) << _utils::mvleft(1000);
         while (std::cin.get(key) && key != '\n')
         {
             int arrKey = _utils::getArrowKey(key);
@@ -187,22 +188,22 @@ namespace asker
                 if (pos > 0)
                 {
                     //change ">" to " " of current option
-                    std::cout << termcolor::reset << " " << _utils::mvStart();
+                    std::cout << color::reset << " " << _utils::mvleft(1000);
                     pos -= 1;
                     //change " " to ">" of next option
-                    std::cout << _utils::mvUp(1) << termcolor::yellow << ">" << termcolor::reset;
-                    std::cout << _utils::mvStart();
+                    std::cout << _utils::mvUp(1) << color::yellow << ">" << color::reset;
+                    std::cout << _utils::mvleft(1000);
                 }
                 break;
             case 66: //down
                 if (pos < max_pos - 1)
                 {
                     //change ">" to " " of current option
-                    std::cout << termcolor::reset << " " << _utils::mvStart();
+                    std::cout << color::reset << " " << _utils::mvleft(1000);
                     pos += 1;
                     //change " " to ">" of next option
-                    std::cout << _utils::mvDown(1) << termcolor::yellow << ">" << termcolor::reset;
-                    std::cout << _utils::mvStart();
+                    std::cout << _utils::mvDown(1) << color::yellow << ">" << color::reset;
+                    std::cout << _utils::mvleft(1000);
                 }
                 break;
             default:
@@ -212,12 +213,13 @@ namespace asker
         ans = options[pos];
         // mv to end options
         std::cout << _utils::mvDown(max_pos - (pos + 1));
+        // clear all options
         for (int i = 0; i < max_pos; i++)
         {
             std::cout << _utils::clearLn(_utils::EOL) << _utils::mvUp(1);
         }
         std::cout << _utils::clearLn(_utils::EOL);
-        std::cout << termcolor::green << "? " << termcolor::blue << msg << " " << termcolor::reset << ans << std::endl;
+        std::cout << color::green << "? " << color::blue << msg << " " << color::reset << ans << std::endl;
         _utils::rawModeOff();
         return ans;
     }
