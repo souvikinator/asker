@@ -1,8 +1,9 @@
-# asker
+### asker
 
-## TODO:
+#### TODO:
 
 - [ ] Inputs:
+	- [x] validation 
 	- [x] normal input
 	- [ ] password input
 	- [ ] hidden input
@@ -11,6 +12,4 @@
 
 - [ ] Select
 	- [x] list select
-	- [ ] horizontal select
-	- [ ] radio
-	- [ ] multi select (checkbox)
+	- [ ] multi select (checkbox?)
