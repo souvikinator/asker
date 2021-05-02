@@ -4,6 +4,7 @@
 #include <typeinfo>
 #include <termios.h>
 #include <unistd.h>
+#include <functional>
 
 namespace asker
 {
@@ -61,18 +62,17 @@ namespace asker
         //* show error and move cursor to previous line
         inline void showErr(const std::string &msg)
         {
-            std::cout << color::red << msg << color::reset << _utils::mvUp(1) << _utils::mvleft(1000);
-        }
-
-        //* move cursor  to the end of the display message
-        inline void mvToInput(const int input_msg_length)
-        {
-            std::cout << _utils::mvRight(input_msg_length);
+            // clear existing error
+            std::cout << _utils::clearLn(_utils::EOL);
+            std::cout << color::red << msg << color::reset;
+            std::cout << _utils::mvUp(1) << _utils::mvleft(1000);
         }
 
         //* prints message in proper format
         inline void printMsg(const std::string &msg)
         {
+            // clear previous message
+            std::cout << _utils::clearLn(_utils::EOL);
             std::cout << color::green << "? " << color::blue << msg + " " << color::reset;
         }
 
@@ -125,25 +125,34 @@ namespace asker
         }
     }
 
-    //TODO: add default value option, add input type check
+    //FIXME: cleanup
     template <typename T>
-    inline T input(const std::string &msg, bool required = false)
+    inline T input(
+        const std::string &msg, std::function<bool(T)> validate = [](T) -> bool { return true; }, bool required = false)
     {
         std::string raw_ans;
-        const int in_msg_len = msg.length() + 3; // "? " + msg + " "
+        // const int in_msg_len = msg.length() + 3; // "? " + msg + " "
         T ans;
         _utils::printMsg(msg);
-        while (getline(std::cin, raw_ans) && raw_ans.length() == 0 && required)
+        while (getline(std::cin, raw_ans))
         {
-            _utils::showErr("! this is a required field");
-            _utils::mvToInput(in_msg_len);
+            std::istringstream sstream(raw_ans);
+            sstream >> ans;
+            if (required && raw_ans.length() == 0)
+            {
+                _utils::showErr("! this is a required field");
+                _utils::printMsg(msg);
+            }
+            else if (!validate(ans))
+            {
+                _utils::showErr("! invalid input");
+                _utils::printMsg(msg);
+            }else{
+                break;
+            }
         }
         // clear error in the next line
-        std::cout << _utils::clearLn(_utils::EOL);
-        std::cout << color::reset;
-        std::istringstream sstream(raw_ans);
-        // FIXME: add type check
-        sstream >> ans;
+        std::cout << _utils::clearLn(_utils::EOL) << color::reset;
         return ans;
     }
 
