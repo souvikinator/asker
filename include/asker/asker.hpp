@@ -7,21 +7,22 @@
 
 namespace asker
 {
-    namespace color{
-        const std::string red="\033[31m";
-        const std::string blue="\033[34m";
-        const std::string green="\033[32m";
-        const std::string yellow="\033[33m";
-        const std::string white="\033[37m";
-        const std::string grey="\033[30;1m";
-        const std::string reset="\033[0m";
+    namespace color
+    {
+        const std::string red = "\033[31m";
+        const std::string blue = "\033[34m";
+        const std::string green = "\033[32m";
+        const std::string yellow = "\033[33m";
+        const std::string white = "\033[37m";
+        const std::string grey = "\033[30;1m";
+        const std::string reset = "\033[0m";
     }
     namespace _utils
     {
         const int EOL = 2; //End of line
         const int CURSOR_TO_EOL = 0;
         const int CURSOR_TO_SOL = 1; //start of line
-        
+
         //* to move cursor n char
         inline std::string mvUp(int n)
         {
@@ -50,7 +51,7 @@ namespace asker
         inline std::string clearLn(int mode)
         {
             char cl[8];
-            if (mode != 1 && mode != 2 && mode != 3)
+            if (mode < 1 && mode > 3)
             {
                 throw "Invalid mode provided in clearLn";
             }
@@ -76,13 +77,15 @@ namespace asker
         }
 
         //* hide cursor
-        inline void hideCursor(){
-            std::cout<<"\033[?25l";
+        inline void hideCursor()
+        {
+            std::cout << "\033[?25l";
         }
 
         //* show cursor
-        inline void showCursor(){
-            std::cout<<"\033[?25h";
+        inline void showCursor()
+        {
+            std::cout << "\033[?25h";
         }
         //* returns arrow key code else -1
         inline int getArrowKey(char key)
@@ -164,25 +167,24 @@ namespace asker
         std::string ans;
         int pos = 0, max_pos = 0;
         _utils::printMsg(msg);
-        std::cout << color::grey << "(up and down arrow key)" << color::reset << std::endl;
+        std::cout << color::grey << "(up and down arrow key)" << color::reset << "\n";
         // print all options
         for (int i = 0; i < n; i++)
         {
-            //empty string? then continue
             if (options[i].empty())
                 continue;
             if (i == 0)
-                std::cout << color::yellow << "> " << color::reset << options[i] << std::endl;
+                std::cout << color::yellow << "> " << color::reset << options[i] << "\n";
             else
-                std::cout << "  " << options[i] << std::endl;
+                std::cout << "  " << options[i] << "\n";
             max_pos += 1;
         }
-        // move cursor to first option and extreme left
-        std::cout << _utils::mvUp(max_pos) << _utils::mvleft(1000);
+        // move cursor to first option
+        std::cout << _utils::mvUp(max_pos);
         while (std::cin.get(key) && key != '\n')
         {
-            int arrKey = _utils::getArrowKey(key);
-            switch (arrKey)
+            int arrow_Key = _utils::getArrowKey(key);
+            switch (arrow_Key)
             {
             case 65: //up
                 if (pos > 0)
@@ -199,7 +201,7 @@ namespace asker
                 if (pos < max_pos - 1)
                 {
                     //change ">" to " " of current option
-                    std::cout << color::reset << " " << _utils::mvleft(1000);
+                    std::cout << color::reset << " " << _utils::mvleft(1);
                     pos += 1;
                     //change " " to ">" of next option
                     std::cout << _utils::mvDown(1) << color::yellow << ">" << color::reset;
@@ -212,14 +214,16 @@ namespace asker
         }
         ans = options[pos];
         // mv to end options
-        std::cout << _utils::mvDown(max_pos - (pos + 1));
-        // clear all options
-        for (int i = 0; i < max_pos; i++)
+        int diff = max_pos - (pos + 1);
+        if (diff > 0)
+            std::cout << _utils::mvDown(diff);
+        // clear all the options
+        while (max_pos--)
         {
             std::cout << _utils::clearLn(_utils::EOL) << _utils::mvUp(1);
         }
-        std::cout << _utils::clearLn(_utils::EOL);
-        std::cout << color::green << "? " << color::blue << msg << " " << color::reset << ans << std::endl;
+        std::cout << _utils::clearLn(_utils::EOL); //clear message line
+        std::cout << color::green << "? " << color::blue << msg << " " << color::reset << ans << "\n";
         _utils::rawModeOff();
         return ans;
     }
