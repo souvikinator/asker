@@ -1,5 +1,9 @@
 ### asker
 
+### demo (will be updated on new features)
+
+![demo](https://i.imgur.com/R8xldwr.gif)
+
 #### TODO:
 
 - [ ] Inputs:
