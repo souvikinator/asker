@@ -244,8 +244,16 @@ namespace asker
     }
 
     // password input
-    /*
-    
+    /* read a string from fp into pw masking keypress with mask char.
+    getpasswd will read upto sz - 1 chars into pw, null-terminating
+    the resulting string. On success, the number of characters in
+    pw are returned, -1 otherwise.
+
+    @param pw    password string
+    @param sz    size of to be allocated string
+    @param mask  mask for terminal input
+    @param fp    File to be maintained alongside for string
+    @returns  -- size of the input string
     */
     ssize_t getpasswd (char **pw, size_t sz, int mask, FILE *fp)
     {
