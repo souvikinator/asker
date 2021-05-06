@@ -1,11 +1,17 @@
 #pragma once
 #include <iostream>
 #include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
 #include <typeinfo>
+#include <string.h>
 #include <termios.h>
 #include <unistd.h>
 #include <functional>
 
+
+// macros
+#define MAXLen 32
 namespace asker
 {
     namespace color
@@ -237,4 +243,71 @@ namespace asker
         return ans;
     }
 
+    // password input
+    /* read a string from fp into pw masking keypress with mask char.
+    getpasswd will read upto sz - 1 chars into pw, null-terminating
+    the resulting string. On success, the number of characters in
+    pw are returned, -1 otherwise.
+
+    @param pw    password string
+    @param sz    size of to be allocated string
+    @param mask  mask for terminal input
+    @param fp    File to be maintained alongside for string
+    @returns  -- size of the input string
+    */
+    ssize_t getpasswd (char **pw, size_t sz, int mask, FILE *fp)
+    {
+	    //checking input 
+	    if (!pw || !sz || !fp)
+		    return -1;
+	#ifdef MAXLen
+	    if (sz > MAXLen)
+		    sz = MAXLen;
+	#endif    
+	    if (*pw == NULL)
+	    {
+		// reallocating if there is no address
+		void *tmp = realloc (*pw, sz * sizeof **pw);
+		if (!tmp)
+			return -1;
+		memset(tmp, 0, sz);
+		*pw = (char*) tmp;
+
+	    }
+	    
+	    size_t idx = 0;
+	    int c = 0;
+        _utils::rawModeOn();
+	    
+        while (((c = fgetc (fp)) != '\n' && c != EOF && idx < sz - 1) ||
+                (idx == sz - 1 && c == 127))
+        {
+            if (c != 127) {
+                if (31 < mask && mask < 127)    // valid ascii char 
+                    fputc (mask, stdout);
+                (*pw)[idx++] = c;
+            }
+            else if (idx > 0) {         // handle backspace (del)   
+                if (31 < mask && mask < 127) {
+                    fputc (0x8, stdout);
+                    fputc (' ', stdout);
+                    fputc (0x8, stdout);
+                }
+                (*pw)[--idx] = 0;
+            }
+        }
+        (*pw)[idx] = 0; // null-terminate   
+    
+        
+        _utils::rawModeOff();
+
+    
+        if (idx == sz - 1 && c != '\n') // warn if pw truncated 
+            fprintf (stderr, " (%s() warning: truncated at %zu chars.)\n",
+                    __func__, sz - 1);
+    
+        return idx; // number of chars in passwd            
+
+	    
+    } 
 }
