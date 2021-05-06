@@ -4,7 +4,11 @@
 
 int main()
 {
-
+   char pw[MAXLen] = {0};
+   char *p = pw;
+   FILE *fp = stdin;
+   ssize_t nchar = 0;
+   
    // confirm prompt demo
    std::cout << "test-2: confirm prompt" << std::endl;
    bool exit = asker::confirm("yo! want to exit?");
@@ -30,7 +34,20 @@ int main()
    // input demo with validator
    
    // input demo with required field
+	
+   // input demo password input 
+   std::cout << "test-4 password input" << std::endl;
+   std::cout << "Enter password: ";
+   nchar = asker::getpasswd (&p, MAXLen, '*', fp);
+   std::cout << "\nyou entered : "<< p << std::endl;
+   std::cout << std::endl;
 
+   // input demo password hidden
+   std::cout << "test-5 password input" << std::endl;
+   std::cout << "Enter password: ";
+   nchar = asker::getpasswd (&p, MAXLen, 0, fp);
+   std::cout << "\nyou entered : "<< p << std::endl;   
+   std::cout << std::endl;
 
    return 0;
 }
