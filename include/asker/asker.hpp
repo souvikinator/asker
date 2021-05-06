@@ -26,7 +26,7 @@ namespace asker
 
         //* to move cursor n char
         inline std::string mvUp(int n)
-        {
+        {  
             return "\033[" + std::to_string(n) + "A";
         }
 

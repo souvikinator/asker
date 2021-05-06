@@ -20,10 +20,12 @@ int main()
    std::cout << std::endl;
 
    //basic input demo
-   std::cout << "test-3: input prompt" << std::endl;
+   std::cout << "test-3: basic input prompt" << std::endl;
    std::string m; //default value
-   m = asker::input<std::string>("yo! enter name:");
-   std::cout << "user entered number: " << m << std::endl;
+   m = asker::input<std::string>("yo! enter name:",[](std::string name)-> bool{
+      return true;
+   },true);
+   std::cout << "user entered: " << m << std::endl;
 
    // input demo with validator
    
