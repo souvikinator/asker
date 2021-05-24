@@ -7,8 +7,6 @@
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
-#include <functional>
-
 
 // macros
 #define MAXLen 32
@@ -32,7 +30,7 @@ namespace asker
 
         //* to move cursor n char
         inline std::string mvUp(int n)
-        {  
+        {
             return "\033[" + std::to_string(n) + "A";
         }
 
@@ -93,7 +91,8 @@ namespace asker
         {
             std::cout << "\033[?25h";
         }
-        //* returns arrow key code else -1
+        //* returns key code
+        // TODO: convert to general key detection function
         inline int getArrowKey(char key)
         {
             if (iscntrl(key))
@@ -131,29 +130,21 @@ namespace asker
         }
     }
 
-    //FIXME: cleanup
-    template <typename T>
-    inline T input(
-        const std::string &msg, std::function<bool(T)> validate = [](T) -> bool { return true; }, bool required = false)
+    //* input prompt with required field
+    inline std::string input(
+        const std::string &msg, bool required = false)
     {
-        std::string raw_ans;
-        // const int in_msg_len = msg.length() + 3; // "? " + msg + " "
-        T ans;
+        std::string ans;
         _utils::printMsg(msg);
-        while (getline(std::cin, raw_ans))
+        while (getline(std::cin, ans))
         {
-            std::istringstream sstream(raw_ans);
-            sstream >> ans;
-            if (required && raw_ans.length() == 0)
+            if (required && ans.length() == 0)
             {
                 _utils::showErr("! this is a required field");
                 _utils::printMsg(msg);
             }
-            else if (!validate(ans))
+            else
             {
-                _utils::showErr("! invalid input");
-                _utils::printMsg(msg);
-            }else{
                 break;
             }
         }
@@ -162,13 +153,41 @@ namespace asker
         return ans;
     }
 
-    //* yes/no ?
+    //* Input prompt with validation
+    inline std::string input(
+        const std::string &msg, std::function<bool(std::string)> validate, bool required = false)
+    {
+        std::string ans;
+        _utils::printMsg(msg);
+        while (getline(std::cin, ans))
+        {
+            if (!validate(ans))
+            {
+                _utils::showErr("! invalid input");
+                _utils::printMsg(msg);
+            }
+            else if (required && ans.empty())
+            {
+                _utils::showErr("! this is a required field");
+                _utils::printMsg(msg);
+            }
+            else
+            {
+                break;
+            }
+        }
+        // clear error in the next line
+        std::cout << _utils::clearLn(_utils::EOL) << color::reset;
+        return ans;
+    }
+
+    //* confirm prompt
     inline bool confirm(const std::string &msg)
     {
         bool res = true;
-        char ans;
-        ans = input<char>(msg + " (y/n) ");
-        if (ans != 'y' && ans != 'Y' && ans != '\0')
+        std::string ans;
+        ans = input(msg + " (y/n) ");
+        if (ans[0] != 'y' && ans[0] != 'Y' && ans[0] != '\0')
             res = false;
         return res;
     }
@@ -243,71 +262,36 @@ namespace asker
         return ans;
     }
 
-    // password input
-    /* read a string from fp into pw masking keypress with mask char.
-    getpasswd will read upto sz - 1 chars into pw, null-terminating
-    the resulting string. On success, the number of characters in
-    pw are returned, -1 otherwise.
-
-    @param pw    password string
-    @param sz    size of to be allocated string
-    @param mask  mask for terminal input
-    @param fp    File to be maintained alongside for string
-    @returns  -- size of the input string
-    */
-    ssize_t getpasswd (char **pw, size_t sz, int mask, FILE *fp)
+    //* password input
+    // FIXME: backspace not working
+    std::string maskedInput(const std::string &msg, bool required = false, char symbol = '*')
     {
-	    //checking input 
-	    if (!pw || !sz || !fp)
-		    return -1;
-	#ifdef MAXLen
-	    if (sz > MAXLen)
-		    sz = MAXLen;
-	#endif    
-	    if (*pw == NULL)
-	    {
-		// reallocating if there is no address
-		void *tmp = realloc (*pw, sz * sizeof **pw);
-		if (!tmp)
-			return -1;
-		memset(tmp, 0, sz);
-		*pw = (char*) tmp;
-
-	    }
-	    
-	    size_t idx = 0;
-	    int c = 0;
+        std::string ans;
+        char c;
+        _utils::printMsg(msg);
         _utils::rawModeOn();
-	    
-        while (((c = fgetc (fp)) != '\n' && c != EOF && idx < sz - 1) ||
-                (idx == sz - 1 && c == 127))
+        while (c = std::getchar())
         {
-            if (c != 127) {
-                if (31 < mask && mask < 127)    // valid ascii char 
-                    fputc (mask, stdout);
-                (*pw)[idx++] = c;
+            if (c != '\n')
+            {
+                ans += c;
+                std::cout << symbol;
             }
-            else if (idx > 0) {         // handle backspace (del)   
-                if (31 < mask && mask < 127) {
-                    fputc (0x8, stdout);
-                    fputc (' ', stdout);
-                    fputc (0x8, stdout);
-                }
-                (*pw)[--idx] = 0;
+            // FIXME: raw-mode improper printing
+            else if (c == '\n' && required && ans.empty())
+            {
+                _utils::showErr("! This is a required field");
+                _utils::printMsg(msg);
+            }
+            else if (c == '\n' && !ans.empty())
+            {
+                _utils::rawModeOff();
+                break;
             }
         }
-        (*pw)[idx] = 0; // null-terminate   
-    
-        
-        _utils::rawModeOff();
-
-    
-        if (idx == sz - 1 && c != '\n') // warn if pw truncated 
-            fprintf (stderr, " (%s() warning: truncated at %zu chars.)\n",
-                    __func__, sz - 1);
-    
-        return idx; // number of chars in passwd            
-
-	    
-    } 
+        // clear error in the next line
+        // std::cout << "\nrequired=" << required << ",ans.length()=" << ans.length() << std::endl;
+        std::cout << _utils::clearLn(_utils::EOL) << color::reset;
+        return ans;
+    }
 }

@@ -1,2 +1,3 @@
 */.vscode
-include/main
+main
+main.cpp
