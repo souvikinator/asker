@@ -8,11 +8,11 @@ A collection of common interactive command line user interfaces for C++ . Inspir
 
 #### TODO:
 
-- [ ] Inputs:
+- [x] Inputs:
 	- [x] validation 
 	- [x] normal input
-	- [ ] password input
-	- [ ] hidden input
+	- [x] password input (minor bugs to fix)
+	- [x] hidden input (minor bugs to fix)
 
 - [x] Confirm (y/n) prompt
 
