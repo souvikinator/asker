@@ -1,6 +1,6 @@
 #include <iostream>
 #include <functional>
-#include "asker/asker.hpp"
+#include "../include/asker/asker.hpp"
 
 int main()
 {
@@ -21,6 +21,16 @@ int main()
    std::string options[5] = {"option-1", "op", "option-3", "option-4"};
    selection = asker::selectList("select options:", options);
    std::cout << "user selected: " << selection << std::endl;
+   std::cout << std::endl;
+
+   std::cout << "demo-2: select list" << std::endl;
+   std::vector<std::string> checkSelection;
+   checkSelection = asker::checkList("select options:", options);
+   std::cout << "user selected: [";
+   for (int i = 0; i < checkSelection.size(); i++) {
+      std::cout << "{" << checkSelection[i] << "}";
+   }
+   std::cout << "]";
    std::cout << std::endl;
 
    //basic input demo
@@ -56,7 +66,7 @@ int main()
    
    //input password demo with different mask char
    std::cout << "demo-6: masked input (with different mask character)" << std::endl;
-   std::string pass = asker::maskedInput("Enter password:", true,'#');
+   pass = asker::maskedInput("Enter password:", true,'#');
    std::cout << "password=" << pass << std::endl;
 
    return 0;

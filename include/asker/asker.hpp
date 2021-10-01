@@ -7,6 +7,7 @@
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
+#include <vector>
 
 // macros
 #define MAXLen 32
@@ -190,6 +191,100 @@ namespace asker
         if (ans[0] != 'y' && ans[0] != 'Y' && ans[0] != '\0')
             res = false;
         return res;
+    }
+
+    // checklist implementation
+    template <size_t n>
+    inline std::vector<std::string> checkList(const std::string &msg, const std::string (&options)[n])
+    {
+        _utils::rawModeOn();
+        char key;
+        std::vector<std::string> ans;
+        bool selectedOp[n];
+        for (int i = 0; i < n; i++) {
+            selectedOp[i] = false;
+        }
+        int pos = 0, max_pos = 0;
+        _utils::printMsg(msg);
+        std::cout << color::grey << "(up and down arrow key for navigation, left to select)" << color::reset << "\n";
+        // print all options
+        for (int i = 0; i < n; i++)
+        {
+            if(options[i].empty()) continue;
+            if (i == 0) std::cout << color::yellow << "> " << color::reset << options[i] << "\n";
+            else std::cout << "  " << options[i] << "\n";
+            max_pos += 1;
+        }
+
+        std::cout << _utils::mvUp(max_pos);
+        while (std::cin.get(key) && key != '\n')
+        {
+            int arrow_Key = _utils::getArrowKey(key);
+            switch (arrow_Key)
+            {
+            case 65: //up
+                if (pos > 0)
+                {
+                    //change ">" to " "/"x" of current option depending upon selection
+                    if (!selectedOp[pos]) std::cout << color::reset << " " << _utils::mvleft(1000);
+                    else std::cout << color::green << "x" << color::reset << _utils::mvleft(1000);
+                    pos -= 1;
+                    //change " " to ">" of next option, depending upon selection
+                    std::cout << _utils::mvUp(1) << ((selectedOp[pos]) ? color::green : color::yellow) << ">" << color::reset;
+                    std::cout << _utils::mvleft(1000);
+                }
+                break;
+            case 66: //down
+                if (pos < max_pos - 1)
+                {
+                    //change ">" to " "/"x" of current option depending upon selection
+                    if (!selectedOp[pos]) std::cout << color::reset << " " << _utils::mvleft(1);
+                    else std::cout << color::green << "x" << color::reset << _utils::mvleft(1);
+                    pos += 1;
+                    //change " " to ">" of next option
+                    std::cout << _utils::mvDown(1) << ((selectedOp[pos]) ? color::green : color::yellow) << ">" << color::reset;
+                    std::cout << _utils::mvleft(1000);
+                }
+                break;
+            case 67: // left
+                {
+                    // change ">" to "x" of current option, if not selected, else deselect and revert
+                    if (!selectedOp[pos]) {
+                        std::cout << color::green << "x" << color::reset << _utils::mvleft(1);
+                        selectedOp[pos] = true;
+                    } else {
+                        std::cout << color::yellow << ">" << color::reset << _utils::mvleft(1);
+                        selectedOp[pos] = false;
+                    }
+                }
+            default:
+                break;
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            if (selectedOp[i]) {
+                ans.push_back(options[i]);
+            }
+        }
+        // mv to end options
+        int diff = max_pos - (pos + 1);
+        if (diff > 0)
+            std::cout << _utils::mvDown(diff);
+        // clear all the options
+        while (max_pos--)
+        {
+            std::cout << _utils::clearLn(_utils::EOL) << _utils::mvUp(1);
+        }
+        std::cout << _utils::clearLn(_utils::EOL); //clear message line
+        std::cout << color::green << "? " << color::blue << msg << " " << color::reset;
+        std::cout << "[";
+        for (int i = 0; i < ans.size(); i++) {
+            std::cout << "{" << ans[i] << "}";
+        }
+        std::cout << "]";
+        std::cout << "\n";
+        _utils::rawModeOff();
+        return ans;
     }
 
     //* select from list of options
