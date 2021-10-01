@@ -10,6 +10,8 @@ A collection of common interactive command line user interfaces for C++ . Inspir
 
 - [ ] Code cleanup
 - [ ] Minor bug fixes 
+- [ ] Add make file 
+- [ ] Add tests
 
 - [x] Inputs:
 	- [x] validation 
