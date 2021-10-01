@@ -8,6 +8,9 @@ A collection of common interactive command line user interfaces for C++ . Inspir
 
 #### TODO:
 
+- [ ] Code cleanup
+- [ ] Minor bug fixes 
+
 - [x] Inputs:
 	- [x] validation 
 	- [x] normal input
