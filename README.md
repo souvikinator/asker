@@ -19,6 +19,6 @@ A collection of common interactive command line user interfaces for C++ . Inspir
 
 - [x] Confirm (y/n) prompt
 
-- [ ] Select
+- [x] Select
 	- [x] list select
-	- [ ] multi select (checkbox?)
+	- [x] multi select (checkbox?)
