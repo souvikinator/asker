@@ -350,7 +350,8 @@ inline std::string selectList(const std::string &msg, const std::string (&option
 }
 
 //* password input
-// FIXME: backspace not working
+// FIXME: backspace not working -- FIXED for most terminals
+// NEW FIXME: Develop a universal way/less convoluted to do the above
 std::string maskedInput(const std::string &msg, bool required = false, char symbol = '*')
 {
     std::string ans;
@@ -358,7 +359,14 @@ std::string maskedInput(const std::string &msg, bool required = false, char symb
     _utils::printMsg(msg);
     _utils::rawModeOn();
     while (c = std::getchar()) {
-        if (c != '\n') {
+        if (c == 0x7F) {
+            // backspace entered, deal accordingly
+            if (!ans.empty()) {
+                ans.pop_back();
+                std::cout << "\b \b";
+            }
+        }
+        else if (c != '\n') {
             ans += c;
             std::cout << symbol;
         }
