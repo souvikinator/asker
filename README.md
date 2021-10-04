@@ -10,15 +10,15 @@ A collection of common interactive command line user interfaces for C++ . Inspir
 
 - [ ] Code cleanup
 - [ ] Minor bug fixes
-- [ ] Add make file
+- [x] Add make file
 - [ ] Add tests
 
 - [x] Inputs:
 
   - [x] validation
   - [x] normal input
-  - [x] password input (minor bugs to fix)
-  - [x] hidden input (minor bugs to fix)
+  - [x] password input
+  - [x] hidden input
 
 - [x] Confirm (y/n) prompt
 
