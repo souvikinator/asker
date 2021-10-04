@@ -4,7 +4,7 @@ A collection of common interactive command line user interfaces for C++ . Inspir
 
 ### demo (will be updated on new features)
 
-![demo](https://i.imgur.com/R8xldwr.gif)
+![demo](https://media.giphy.com/media/QOa6qNyxi9VZrnbLFb/giphy.gif)
 
 #### TODO:
 
