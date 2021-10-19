@@ -19,6 +19,7 @@ A collection of common interactive command line user interfaces for C++ . Inspir
   - [x] normal input
   - [x] password input
   - [x] hidden input
+  - [x] input from text editor
 
 - [x] Confirm (y/n) prompt
 
