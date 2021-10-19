@@ -1,5 +1,8 @@
 #pragma once
+#include <cstdlib>
+#include <fstream>
 #include <iostream>
+#include <iterator>
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -383,5 +386,34 @@ std::string maskedInput(const std::string &msg, bool required = false, char symb
     // std::cout << "\nrequired=" << required << ",ans.length()=" << ans.length() << std::endl;
     std::cout << _utils::clearLn(_utils::EOL) << color::reset;
     return ans;
+}
+
+std::string getDefaultEditor() {
+    if (const char *editor = std::getenv("EDITOR")) {
+        return editor;
+    } else {
+#ifdef _WIN32
+        return "notepad.exe";
+#else
+        return "nano";
+#endif
+    }
+}
+
+static std::string defaultEditor = getDefaultEditor();
+
+std::string editor(const std::string &msg, const std::string &editor = defaultEditor) {
+    _utils::printMsg(msg);
+    const char *tmpFileName = std::tmpnam(nullptr);
+    int exitCode = std::system((editor + " " + tmpFileName).c_str());
+    if (exitCode != 0) {
+        _utils::showErr("External editor command exited with non-zero exit code");
+        std::cout << color::reset << std::endl;
+        return "";
+    }
+    std::ifstream tmpFile(tmpFileName);
+    std::string content((std::istreambuf_iterator<char>(tmpFile)), (std::istreambuf_iterator<char>()));
+    std::cout << color::reset << std::endl;
+    return content;
 }
 }
