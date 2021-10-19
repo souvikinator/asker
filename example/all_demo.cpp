@@ -69,5 +69,9 @@ int main() {
   pass = asker::maskedInput("Enter password:", true, '#');
   std::cout << "password=" << pass << std::endl;
 
+  // input using text editor
+  std::cout << "demo-7: editor input" << std::endl;
+  m = asker::editor("Enter some text in the editor:");
+  std::cout << "user entered: " << m << std::endl;
   return 0;
 }
