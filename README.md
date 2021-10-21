@@ -1,10 +1,10 @@
-### asker
+# Asker
 
 A collection of common interactive command line user interfaces for C++ . Inspired by [inquirer](https://www.npmjs.com/package/inquirer)
 
 ### demo (will be updated on new features)
 
-![demo](https://i.imgur.com/R8xldwr.gif)
+![demo](https://media.giphy.com/media/QOa6qNyxi9VZrnbLFb/giphy.gif)
 
 #### TODO:
 
@@ -19,6 +19,7 @@ A collection of common interactive command line user interfaces for C++ . Inspir
   - [x] normal input
   - [x] password input
   - [x] hidden input
+  - [x] input from text editor
 
 - [x] Confirm (y/n) prompt
 
